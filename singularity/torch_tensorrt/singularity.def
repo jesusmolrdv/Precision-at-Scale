@@ -1,0 +1,38 @@
+Bootstrap: docker
+From: nvcr.io/nvidia/pytorch:23.07-py3
+Stage: spython-base
+
+# Used by: Stage_2 synthetic image generation (TensorRT diffusion), Stage_3
+# deduplication (embeddings + adjacency-matrix dedup).
+#
+# cuml/cudf for dedup come from this base image, not from anything below.
+
+%files
+    singularity/torch_tensorrt/requirements.txt /workdir/requirements.txt
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    export TZ=UTC
+
+    python3 -m pip install --upgrade pip
+
+    # --- Stage_2 synthetic generation dependencies ---
+    python3 -m pip install --upgrade tensorrt==8.6.1
+    python3 -m pip install webdataset
+    cd /workdir
+    pip3 install -r requirements.txt
+
+    # --- Stage_3 deduplication dependencies ---
+    pip install "numpy<2" faiss-cpu polars
+    apt update --allow-unauthenticated --allow-insecure-repositories && \
+    DEBIAN_FRONTEND=noninteractive TZ=UTC apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
+    apt update --allow-unauthenticated --allow-insecure-repositories && \
+    DEBIAN_FRONTEND=noninteractive TZ=UTC apt install -y g++-11
+
+    # Clean apt cache
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+%runscript
+    echo "Container was run with the following command: $*"
+    exec bash -c "source activate /opt/conda && $@"

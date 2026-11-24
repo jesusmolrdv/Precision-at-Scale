@@ -1,0 +1,67 @@
+Bootstrap: docker
+From: condaforge/miniforge3:23.11.0-0
+Stage: spython-base
+
+%post
+    export DEBIAN_FRONTEND=noninteractive 
+    export TZ=UTC
+
+    apt-get update && apt-get install libc6 ffmpeg libsm6 libxext6 build-essential libgeos-dev -y
+
+    mamba create --name tmars python=3.10 -y
+
+    mkdir -p /usr
+    cd /usr
+    git clone https://github.com/locuslab/T-MARS.git
+    cd T-MARS
+    bash -c "source activate /opt/conda/envs/tmars && pip install Cython && pip install -e . && pip install pandas polars webdataset"
+
+    cd /usr/T-MARS/dataset2metadata/text_detection
+    wget https://github.com/czczup/FAST/releases/download/release/fast_tiny_tt_512_finetune_ic17mlt.pth 
+
+    bash -c "source activate /opt/conda/envs/tmars && pip install opencv-python==4.8.1.78 && pip install openmim && mim install mmengine mmcv mmdet && pip install tqdm==4.64.1"
+    bash -c "source activate /opt/conda/envs/tmars && cd models/post_processing/pa && python setup.py build_ext --inplace"
+    cd /usr/T-MARS/dataset2metadata/text_detection
+    bash -c "source activate /opt/conda/envs/tmars && cd models/post_processing/pse && python setup.py build_ext --inplace"
+    cd /usr/T-MARS/dataset2metadata/text_detection
+    bash -c "source activate /opt/conda/envs/tmars && mamba install -y -c conda-forge cudatoolkit-dev==11.7"
+    bash -c "source activate /opt/conda/envs/tmars && cd models/post_processing/ccl && TORCH_CUDA_ARCH_LIST='8.6' python setup.py build_ext --inplace"
+    cd /usr/T-MARS/dataset2metadata/text_detection
+    bash -c "source activate /opt/conda/envs/tmars && pip install chardet && pip uninstall -y certifi && pip install certifi"    
+    # mmocr's own setup.py silently upgrades numpy/Pillow past what
+    # dataset2metadata pins (numpy==1.23.5, Pillow==9.4.0), and pandas'
+    # compiled _libs stay built against the old numpy ABI -- `mim` crashes
+    # importing pandas the moment it's invoked afterward ("numpy.dtype size
+    # changed, may indicate binary incompatibility"). Re-pin and force-reinstall pandas against the pinned
+    # numpy before running mim.
+    # mmcv is also re-pinned here: the earlier unpinned `mim install ... mmcv
+    # ...` grabs whatever's latest (2.2.0 as of writing), but mmdet<3.2.0
+    # asserts mmcv must be >=2.0.0rc4,<2.1.0 -- without this, importing mmdet
+    # (pulled in transitively by mmocr's own __init__.py) fails with
+    # "AssertionError: MMCV==2.2.0 is used but incompatible", which import-chains
+    # up as a confusing "cannot import name 'digit_version' from 'mmocr'"
+    # wherever mmocr is imported first.
+    #
+    # pyarrow is also bumped here: T-MARS's own requirements pin pyarrow==7.0.0,
+    # but the unpinned/latest pandas reinstalled above needs pyarrow>=10.0.1 --
+    # without this, dataset2metadata's own parquet writer (writer.py) fails
+    # with "ImportError: Pandas requires version '10.0.1' or newer of
+    # 'pyarrow' (version '7.0.0' currently installed)" the moment it tries to
+    # write bbox metadata, well after the rest of the run has already
+    # succeeded. --no-deps is required here too: plain `pip install
+    # pyarrow==14.0.2` pulls in pyarrow's own numpy>=... dependency, silently
+    # upgrading numpy past the 1.23.5 pinned above to a numpy 2.x that breaks
+    # cv2/torchvision's compiled C extensions ("AttributeError: _ARRAY_API not
+    # found" / "numpy.core.multiarray failed to import").
+    bash -c "source activate /opt/conda/envs/tmars && git clone https://github.com/open-mmlab/mmocr.git && cd mmocr && pip install -e . && pip install --force-reinstall numpy==1.23.5 Pillow==9.4.0 && pip install --force-reinstall --no-deps pandas && pip install --force-reinstall --no-deps pyarrow==14.0.2 && mim install 'mmcv<2.1.0,>=2.0.0rc4' 'mmdet<3.2.0'"
+
+    sed -i 's/text='\''txt'\''//g' /usr/T-MARS/dataset2metadata/dataloaders.py
+
+
+
+    # Clean up
+    bash -c "source activate /opt/conda/envs/tmars && conda clean --all -y && pip cache purge"
+
+%runscript
+    echo "Container was run with the following command: $*"
+    exec bash -c "source activate /opt/conda/envs/tmars && $@"

@@ -1,0 +1,30 @@
+# Byte-compiled / optimized files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS / editor cruft
+.DS_Store
+.vscode/
+.idea/
+
+# Model weights and container images — large binaries, fetched separately
+# (see README.md's Environment section and each Stage's README for how)
+*.gguf
+*.pt
+*.pth
+*.onnx
+*.plan
+*.sif
+models/
+pretrained/
+
+# LAION5B index shards (Stage_2/laion5b/) — indices.json itself stays tracked
+Stage_2/laion5b/*.parquet
+Stage_2/laion5b/*.arrow
+
+# Pipeline outputs — everything under output/<domain>/ for any stage
+output/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

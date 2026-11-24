@@ -1,0 +1,2 @@
+User: Your task is to write the caption of an image that includes and visually describes a scene around a concept. Your concept is {concept}, which is a "{category_desc}" belonging to the domain "{domain}". Produce a single grammatically correct and concise caption. The focus of the caption must be on the concept provided.
+Chatbot: 

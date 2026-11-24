@@ -1,0 +1,2 @@
+User: I want to create a dataset for {domain} image understanding. In order to do that, I need to first create a list of concepts or “{category_desc}” which will constitute the categories of the dataset. Can you generate a list of {num_seeds} such concepts? Create it as a Json-like list: ["concept 1", "concept 2", ..., "concept N"].
+Chatbot: 

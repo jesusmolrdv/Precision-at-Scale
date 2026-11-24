@@ -1,0 +1,39 @@
+# This documents Stage_3's third-party import surface across src/ and
+# scripts/ so a fresh environment can be built. Versions are intentionally
+# not pinned; install versions compatible with your CUDA/torch setup.
+
+torch
+torchvision
+polars
+pandas
+pyarrow
+numpy
+scipy
+Pillow
+tqdm
+joblib
+webdataset
+loguru
+paretoset
+PyYAML
+funcy
+
+# KneeBasedStopCriteria (src/pareto_front_filtering.py)
+kneed
+
+# connected_components (src/utils.py) — optional accelerator with a scipy
+# fallback; ships with the torch_tensorrt base image where dedup actually runs.
+# numba
+
+# CLIPN OOD scoring (src/clipn.py, src/classification.py, src/open_clip2/)
+ftfy
+regex
+timm
+
+# Deduplication KNN (src/cuml_knn.py) — RAPIDS, requires a matching CUDA toolkit,
+# not installable via plain pip; see RAPIDS install docs.
+# cudf
+# cuml
+
+# Text-detection blurring (src/blur_text.py)
+opencv-python

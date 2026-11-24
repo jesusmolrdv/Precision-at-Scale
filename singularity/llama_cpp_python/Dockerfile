@@ -1,0 +1,24 @@
+# This image's dependencies match how Stage_1/main.py uses it:
+# langchain_community.llms.LlamaCpp with n_gpu_layers=-1 (full GPU offload)
+# over local .gguf models (mixtral/mistral/llama2-13b), which requires
+# llama-cpp-python built with CUDA (cuBLAS) support.
+FROM nvidia/cuda:12.1.1-devel-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+RUN apt-get update && apt-get install -y python3 python3-pip git build-essential cmake \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --upgrade pip
+
+# -DLLAMA_CUBLAS=on was the llama-cpp-python CUDA build flag as of early
+# 2024, but pip installs the latest release by default and recent
+# llama-cpp-python hard-errors on that flag ("LLAMA_CUBLAS is deprecated,
+# use GGML_CUDA instead") rather than just warning. Use the current flag
+# name, and pin the version so the image stays reproducible.
+RUN CMAKE_ARGS="-DGGML_CUDA=on" FORCE_CMAKE=1 python3 -m pip install --no-cache-dir llama-cpp-python==0.3.35
+
+RUN python3 -m pip install --no-cache-dir langchain langchain-community langchain-core pyyaml tqdm
+
+ENTRYPOINT ["/bin/bash", "-c"]

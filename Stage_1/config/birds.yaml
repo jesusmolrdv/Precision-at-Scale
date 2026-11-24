@@ -1,0 +1,10 @@
+domain: birds
+category_desc: "bird species"
+num_iters_seeds: 10
+relative_threshold_seeds: 0.01 # From 0 to 1
+seed_expansion:
+  num_iters: 10
+  target_num_concepts: 2_000
+  force_stop: false
+  validate_concepts: true
+  relative_threshold: 0.01 # From 0 to 1

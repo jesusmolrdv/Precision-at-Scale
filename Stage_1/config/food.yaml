@@ -1,0 +1,9 @@
+domain: food dish
+category_desc: "food dish"
+num_iters_seeds: 5
+relative_threshold_seeds: 0.01 # From 0 to 1
+seed_expansion:
+  num_iters: 3
+  target_num_concepts: 5_000
+  force_stop: false
+  relative_threshold: 0.01 # From 0 to 1

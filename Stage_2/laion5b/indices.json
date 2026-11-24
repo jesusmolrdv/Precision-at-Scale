@@ -1,0 +1,13 @@
+{
+    "relaion5B": {
+            "indice_folder": "laion5b/relaion5B-index",
+            "provide_safety_model": true,
+            "enable_faiss_memory_mapping": true,
+            "use_arrow": false,
+            "enable_hdf5": true,
+            "reorder_metadata_by_ivf_index": false,
+            "columns_to_return": ["url", "caption"],
+            "clip_model": "ViT-L/14",
+            "enable_mclip_option": true
+    }
+}

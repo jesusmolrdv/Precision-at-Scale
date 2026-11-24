@@ -1,0 +1,2 @@
+User: In the domain "{domain}", is "{concept}" a valid example of a "{category_desc}"? Answer true or false.
+Chatbot: 

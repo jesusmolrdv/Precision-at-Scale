@@ -1,0 +1,28 @@
+# Pinned contemporaneous with diffusers==0.14.0/huggingface_hub==0.14.1
+# below (Feb 2023): a current accelerate needs
+# huggingface_hub.split_torch_state_dict_into_shards, which doesn't exist
+# in the huggingface_hub version pinned here.
+accelerate==0.18.0
+colored
+cuda-python
+diffusers==0.14.0
+# huggingface_hub is pulled in unpinned by other packages here; a current one
+# removed cached_download (gone since 0.26.0), which diffusers==0.14.0 still
+# imports at module load time. Pin to a version contemporaneous with
+# diffusers 0.14.0 (Feb 2023) that still has it.
+huggingface_hub==0.14.1
+ftfy
+matplotlib
+nvtx
+# onnx 1.14.0 and polygraphy 0.47.1 are the versions the base image ships;
+# onnx-graphsurgeon >= 0.5.2 (the oldest release on PyPI) needs onnx >= 1.14.
+onnx==1.14.0
+onnxruntime==1.15.1
+onnx-graphsurgeon==0.5.2
+polygraphy==0.47.1
+# Lets the pinned transformers/diffusers load .safetensors checkpoints, the
+# format current Hugging Face downloads use.
+safetensors==0.4.5
+scipy
+torch
+transformers==4.26.1
